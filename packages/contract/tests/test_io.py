@@ -58,6 +58,77 @@ def test_read_skips_frames_when_load_frames_false(tmp_path):
     assert got.metrics["sharpe"] == 0.85  # scalars always present
 
 
+def test_trades_and_positions_round_trip(tmp_path):
+    from datetime import UTC, datetime
+
+    trades_df = pl.DataFrame(
+        {
+            "ts": [datetime(2026, 1, 2, tzinfo=UTC), datetime(2026, 1, 3, tzinfo=UTC)],
+            "symbol": ["AAPL", "MSFT"],
+            "qty": [10, -5],
+            "price": [150.0, 310.0],
+        }
+    )
+    positions_df = pl.DataFrame(
+        {
+            "ts": [datetime(2026, 1, 31, tzinfo=UTC)],
+            "symbol": ["AAPL"],
+            "weight": [0.6],
+        }
+    )
+    report = PerfReport(
+        schema_version=SCHEMA_VERSION,
+        run_id="r2",
+        run_ts=datetime(2026, 6, 3, tzinfo=UTC),
+        git_sha="sha2",
+        git_dirty=False,
+        eval_name="meta_allocation_portfolio",
+        universe="u2",
+        cost_bps=3.0,
+        freq="1D",
+        params={},
+        metrics={"sharpe": 1.2},
+        series=pl.DataFrame(
+            {
+                "timestamp": [datetime(2026, 1, 1, tzinfo=UTC)],
+                "equity": [1.0],
+                "returns": [0.0],
+            }
+        ),
+        trades=trades_df,
+        positions=positions_df,
+        extras={},
+    )
+
+    json_path = write_report(report, tmp_path)
+
+    # All three sidecar files must exist
+    assert (tmp_path / "r2.series.parquet").exists()
+    assert (tmp_path / "r2.trades.parquet").exists()
+    assert (tmp_path / "r2.positions.parquet").exists()
+
+    # JSON sidecars dict has all three keys; frame rows not inlined
+    raw = json.loads(json_path.read_text())
+    assert set(raw["sidecars"].keys()) == {"series", "trades", "positions"}
+    assert "symbol" not in raw
+    assert "qty" not in raw
+
+    # Full round-trip with load_frames=True
+    got = read_report(json_path)
+    assert got.trades is not None
+    assert got.positions is not None
+    assert got.trades.shape == trades_df.shape
+    assert got.positions.shape == positions_df.shape
+    assert got.trades.equals(trades_df)
+    assert got.positions.equals(positions_df)
+
+    # load_frames=False leaves all three None
+    got_no_frames = read_report(json_path, load_frames=False)
+    assert got_no_frames.series is None
+    assert got_no_frames.trades is None
+    assert got_no_frames.positions is None
+
+
 def test_write_report_raises_for_unsafe_run_id(tmp_path):
     bad = PerfReport(
         schema_version=SCHEMA_VERSION,

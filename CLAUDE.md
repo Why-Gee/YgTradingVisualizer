@@ -84,6 +84,22 @@ formatting before committing.
 `dev` dependency group as a safety net. The Overview page explicitly converts tz-aware columns to
 display strings before calling `to_dicts()` — do not remove that guard.
 
+## Running the app (env-driven entrypoint)
+
+`python -m ygtv.app` launches the Dash dashboard using env vars — no hard-coded paths:
+
+| Var | Default | Purpose |
+|---|---|---|
+| `YGTV_SOURCE_DIR` | **(required)** | Directory containing `*.json` ygperf report files |
+| `YGTV_HOST` | `127.0.0.1` | Dash/Flask bind host |
+| `YGTV_PORT` | `8050` | Dash/Flask bind port |
+| `YGTV_DEBUG` | `` (off) | Set to `1`, `true`, or `yes` to enable Dash debug mode |
+
+Example:
+```bash
+YGTV_SOURCE_DIR=/path/to/reports uv run python -m ygtv.app
+```
+
 ## Syncing and reinstalling
 
 After adding new source files to a workspace package, reinstall it:
