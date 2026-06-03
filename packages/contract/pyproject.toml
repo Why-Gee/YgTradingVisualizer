@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ygperf"
+version = "0.1.0"
+description = "Source-agnostic trading-performance report contract (PerfReport): pure dataclasses + polars."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "Yaniv Gorali", email = "yanivg@gmail.com" }]
+dependencies = ["polars>=1.0", "pyarrow>=15.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ygperf"]
