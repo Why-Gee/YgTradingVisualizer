@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ygtv-sources"
+version = "0.1.0"
+description = "Source adapters that feed ygperf PerfReports to the visualizer (Source protocol + DirectorySource + LiveSource)."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["ygperf", "polars>=1.0"]
+
+[project.optional-dependencies]
+hf = ["huggingface_hub>=1.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ygtv"]
