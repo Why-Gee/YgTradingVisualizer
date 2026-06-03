@@ -14,21 +14,24 @@ members = [
     "packages/contract",
     "packages/components",
     "packages/sources",
-    # "app",                  # added in later units
+    "app",
 ]
 
 [tool.uv.sources]
 ygperf = { workspace = true }
 ygtv-components = { workspace = true }
 ygtv-sources = { workspace = true }
+ygtv-app = { workspace = true }
 
 [dependency-groups]
 dev = [
     "pytest>=8.0",
     "ruff>=0.6",
+    "tzdata>=2024.1",
     "ygperf",
     "ygtv-components",
     "ygtv-sources",
+    "ygtv-app",
 ]
 
 [tool.ruff]
