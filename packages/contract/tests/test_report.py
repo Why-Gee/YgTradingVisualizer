@@ -1,7 +1,6 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 
 import polars as pl
-
 from ygperf.report import SCHEMA_VERSION, PerfReport
 
 
@@ -9,7 +8,7 @@ def _minimal() -> PerfReport:
     return PerfReport(
         schema_version=SCHEMA_VERSION,
         run_id="abc123",
-        run_ts=datetime(2026, 6, 3, tzinfo=timezone.utc),
+        run_ts=datetime(2026, 6, 3, tzinfo=UTC),
         git_sha="deadbeef",
         git_dirty=False,
         eval_name="meta_allocation_portfolio",
@@ -18,7 +17,9 @@ def _minimal() -> PerfReport:
         freq="1M",
         params={"k": 3},
         metrics={"sharpe": 0.85, "maxdd": 0.234},
-        series=pl.DataFrame({"timestamp": [datetime(2026, 1, 1)], "equity": [1.0], "returns": [0.0]}),
+        series=pl.DataFrame(
+            {"timestamp": [datetime(2026, 1, 1)], "equity": [1.0], "returns": [0.0]}
+        ),
         trades=None,
         positions=None,
         extras={"sweep_by_k": [0.7, 0.8]},

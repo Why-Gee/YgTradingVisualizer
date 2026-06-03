@@ -1,8 +1,7 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 
 import polars as pl
-
 from ygperf.io import read_report, write_report
 from ygperf.report import SCHEMA_VERSION, PerfReport
 
@@ -11,7 +10,7 @@ def _report() -> PerfReport:
     return PerfReport(
         schema_version=SCHEMA_VERSION,
         run_id="r1",
-        run_ts=datetime(2026, 6, 3, tzinfo=timezone.utc),
+        run_ts=datetime(2026, 6, 3, tzinfo=UTC),
         git_sha="sha1",
         git_dirty=False,
         eval_name="meta_allocation_portfolio",
