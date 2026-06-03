@@ -1,7 +1,6 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 
 import polars as pl
-
 from ygperf.io import write_report
 from ygperf.report import SCHEMA_VERSION, PerfReport
 from ygtv.sources.base import Source
@@ -12,7 +11,7 @@ def _write(tmp_path, run_id, sha, sharpe):
     r = PerfReport(
         schema_version=SCHEMA_VERSION,
         run_id=run_id,
-        run_ts=datetime(2026, 6, 3, tzinfo=timezone.utc),
+        run_ts=datetime(2026, 6, 3, tzinfo=UTC),
         git_sha=sha,
         git_dirty=False,
         eval_name="meta_allocation_portfolio",
@@ -40,7 +39,8 @@ def test_directory_source_indexes_runs_and_loads_reports(tmp_path):
 
     runs = src.runs()  # tidy frame for overview/regression
     assert set(runs["run_id"]) == {"r1", "r2"}
-    assert "sharpe" in runs.columns and "git_sha" in runs.columns
+    assert "sharpe" in runs.columns
+    assert "git_sha" in runs.columns
     assert runs.filter(pl.col("run_id") == "r2")["sharpe"].item() == 0.85
 
     rep = src.report("r1")  # full report w/ series
