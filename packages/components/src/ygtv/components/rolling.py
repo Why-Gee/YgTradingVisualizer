@@ -4,7 +4,7 @@ import math
 
 import plotly.graph_objects as go
 from ygperf.report import PerfReport
-from ygtv.components.equity import _empty
+from ygtv.components._base import _empty
 
 
 def rolling_sharpe(
@@ -12,7 +12,7 @@ def rolling_sharpe(
 ) -> go.Figure:
     """Rolling Sharpe ratio from report.series returns. Falls back to empty if series too short."""
     s = report.series
-    if s is None or s.height < window:
+    if s is None or s.is_empty() or s.height < window:
         return _empty("series too short")
     r = s["returns"].to_list()
     ts = s["timestamp"].to_list()

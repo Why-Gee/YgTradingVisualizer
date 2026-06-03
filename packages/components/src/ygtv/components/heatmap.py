@@ -3,7 +3,7 @@ from __future__ import annotations
 import plotly.graph_objects as go
 import polars as pl
 from ygperf.report import PerfReport
-from ygtv.components.equity import _empty
+from ygtv.components._base import _empty
 
 
 def monthly_returns_heatmap(report: PerfReport) -> go.Figure:

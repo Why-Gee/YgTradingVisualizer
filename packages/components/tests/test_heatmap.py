@@ -1,7 +1,8 @@
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 
 import plotly.graph_objects as go
 import polars as pl
+import pytest
 from ygperf.report import SCHEMA_VERSION, PerfReport
 from ygtv.components.heatmap import monthly_returns_heatmap
 
@@ -33,3 +34,6 @@ def test_heatmap_returns_heatmap_trace():
     assert isinstance(fig, go.Figure)
     assert len(fig.data) == 1
     assert fig.data[0].type == "heatmap"
+    # Numeric check: 2025 Jan has one row with returns=0.01 → sum=0.01
+    # z rows are ordered by year; 2025 is first row (index 0), Jan is col index 0
+    assert fig.data[0].z[0][0] == pytest.approx(0.01)
