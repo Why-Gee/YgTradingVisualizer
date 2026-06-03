@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -13,6 +14,8 @@ _FRAME_FIELDS = ("series", "trades", "positions")
 
 def write_report(report: PerfReport, dest_dir: str | Path) -> Path:
     """Write <run_id>.json (scalars+metadata+extras+sidecar pointers) + parquet sidecars."""
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", report.run_id) or report.run_id in {".", ".."}:
+        raise ValueError(f"run_id must be filesystem-safe, got {report.run_id!r}")
     dest = Path(dest_dir)
     dest.mkdir(parents=True, exist_ok=True)
     sidecars: dict[str, str] = {}

@@ -1,6 +1,8 @@
-from datetime import UTC, datetime, timezone
+import dataclasses
+from datetime import UTC, datetime
 
 import polars as pl
+import pytest
 from ygperf.report import SCHEMA_VERSION, PerfReport
 
 
@@ -31,11 +33,5 @@ def test_perfreport_is_frozen_and_carries_fields():
     assert r.schema_version == SCHEMA_VERSION
     assert r.metrics["sharpe"] == 0.85
     assert r.series.columns == ["timestamp", "equity", "returns"]
-    import dataclasses
-
-    try:
-        r.eval_name = "x"  # frozen → should raise
-        raised = False
-    except dataclasses.FrozenInstanceError:
-        raised = True
-    assert raised
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        r.eval_name = "x"

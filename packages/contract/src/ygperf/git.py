@@ -9,7 +9,12 @@ def capture_git(repo_dir: str | Path) -> tuple[str, bool]:
     repo_dir = str(repo_dir)
     try:
         sha = subprocess.run(
-            ["git", "rev-parse", "HEAD"], cwd=repo_dir, capture_output=True, text=True, check=True
+            ["git", "rev-parse", "HEAD"],
+            cwd=repo_dir,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=10,
         ).stdout.strip()
         status = subprocess.run(
             ["git", "status", "--porcelain"],
@@ -17,7 +22,13 @@ def capture_git(repo_dir: str | Path) -> tuple[str, bool]:
             capture_output=True,
             text=True,
             check=True,
+            timeout=10,
         ).stdout.strip()
         return sha, bool(status)
-    except (subprocess.CalledProcessError, FileNotFoundError, NotADirectoryError):
+    except (
+        subprocess.CalledProcessError,
+        FileNotFoundError,
+        NotADirectoryError,
+        subprocess.TimeoutExpired,
+    ):
         return "unknown", False

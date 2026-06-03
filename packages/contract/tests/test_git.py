@@ -1,15 +1,6 @@
 import subprocess
-from pathlib import Path
 
-import pytest
 from ygperf.git import capture_git
-
-
-def _is_git_repo(p: Path) -> bool:
-    return (
-        subprocess.run(["git", "rev-parse", "--git-dir"], cwd=p, capture_output=True).returncode
-        == 0
-    )
 
 
 def test_capture_git_returns_sha_and_dirty_flag(tmp_path):

@@ -1,7 +1,8 @@
 import json
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 
 import polars as pl
+import pytest
 from ygperf.io import read_report, write_report
 from ygperf.report import SCHEMA_VERSION, PerfReport
 
@@ -50,8 +51,30 @@ def test_write_then_read_round_trips(tmp_path):
     assert got.trades is None
 
 
-def test_read_is_lazy_when_load_series_false(tmp_path):
+def test_read_skips_frames_when_load_frames_false(tmp_path):
     json_path = write_report(_report(), tmp_path)
     got = read_report(json_path, load_frames=False)
     assert got.series is None  # not loaded
     assert got.metrics["sharpe"] == 0.85  # scalars always present
+
+
+def test_write_report_raises_for_unsafe_run_id(tmp_path):
+    bad = PerfReport(
+        schema_version=SCHEMA_VERSION,
+        run_id="../evil",
+        run_ts=datetime(2026, 6, 3, tzinfo=UTC),
+        git_sha="sha1",
+        git_dirty=False,
+        eval_name="meta_allocation_portfolio",
+        universe="u",
+        cost_bps=5.0,
+        freq="1M",
+        params={},
+        metrics={},
+        series=None,
+        trades=None,
+        positions=None,
+        extras={},
+    )
+    with pytest.raises(ValueError, match="run_id must be filesystem-safe"):
+        write_report(bad, tmp_path)
