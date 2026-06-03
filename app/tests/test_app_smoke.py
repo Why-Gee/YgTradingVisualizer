@@ -1,9 +1,12 @@
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 
+import dash
+import plotly.graph_objects as go
 import polars as pl
 from dash import Dash
 from ygperf.report import SCHEMA_VERSION, PerfReport
 from ygtv.app.factory import build_app
+from ygtv.app.pages.tearsheet import _render_figures
 
 
 class _FakeSource:
@@ -45,8 +48,23 @@ def test_build_app_returns_dash_with_pages_and_flask_server():
     assert isinstance(app, Dash)
     assert app.layout is not None
     assert app.server is not None  # Flask server exposed for deploy
-    # Overview registered at "/"
-    import dash
-
     paths = {p["path"] for p in dash.page_registry.values()}
-    assert "/" in paths
+    assert {"/", "/tearsheet"} <= paths
+
+
+def test_build_app_idempotent_no_page_leak():
+    """Calling build_app twice must not leak or duplicate page registrations."""
+    build_app(_FakeSource())
+    build_app(_FakeSource())
+    paths = {p["path"] for p in dash.page_registry.values()}
+    assert paths == {"/", "/tearsheet"}
+    assert len(dash.page_registry) == 2
+
+
+def test_render_figures_returns_four_graphs():
+    """_render_figures returns exactly 4 dcc.Graph components with go.Figure figures."""
+    figures = _render_figures(_FakeSource(), "r1")
+    assert len(figures) == 4
+    for graph in figures:
+        assert isinstance(graph, dash.dcc.Graph)
+        assert isinstance(graph.figure, go.Figure)

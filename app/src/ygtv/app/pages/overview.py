@@ -16,7 +16,7 @@ def register(source) -> None:
             [
                 pl.col(c).dt.to_string("%Y-%m-%d %H:%M")
                 for c, t in zip(runs.columns, runs.dtypes, strict=False)
-                if t == pl.Datetime or (hasattr(t, "base_type") and t.base_type() == pl.Datetime)
+                if t == pl.Datetime
             ]
         )
 

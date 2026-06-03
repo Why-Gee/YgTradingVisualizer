@@ -12,6 +12,7 @@ def build_app(source) -> Dash:
     `app.server` is the Flask WSGI server (for gunicorn/deploy).
     Auth and hosting configuration are deferred to the deployment layer.
     """
+    dash.page_registry.clear()  # idempotent: don't leak pages across app instances/tests
     app = Dash(
         __name__,
         use_pages=True,

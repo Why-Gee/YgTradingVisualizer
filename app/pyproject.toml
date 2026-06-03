@@ -18,6 +18,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Optional tear-sheet export (Phase 2); intentionally not imported by core.
 quantstats = ["quantstats>=0.0.62"]
 
 [tool.hatch.build.targets.wheel]
