@@ -1,6 +1,7 @@
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 
 import polars as pl
+import pytest
 from ygperf.io import write_report
 from ygperf.report import SCHEMA_VERSION, PerfReport
 from ygtv.sources.base import Source
@@ -37,3 +38,8 @@ def test_livesource_satisfies_protocol_and_reads_latest(tmp_path):
     assert isinstance(src, Source)
     assert src.runs().height == 2
     assert src.latest().run_id == "b"  # newest by run_ts
+
+
+def test_livesource_latest_raises_on_empty_dir(tmp_path):
+    with pytest.raises(LookupError):
+        LiveSource(tmp_path).latest()

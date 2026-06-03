@@ -6,6 +6,18 @@ import polars as pl
 from ygperf.io import read_report
 from ygperf.report import PerfReport
 
+_RESERVED = {"run_id", "git_sha", "run_ts", "eval_name", "cost_bps"}
+
+_EMPTY = pl.DataFrame(
+    schema={
+        "run_id": pl.String,
+        "git_sha": pl.String,
+        "run_ts": pl.Datetime,
+        "eval_name": pl.String,
+        "cost_bps": pl.Float64,
+    }
+)
+
 
 class DirectorySource:
     """Reads ygperf JSON reports from a directory (glob `*.json`). Source-agnostic."""
@@ -19,7 +31,16 @@ class DirectorySource:
     def runs(self) -> pl.DataFrame:
         rows = []
         for p in self._json_paths():
-            r = read_report(p, load_frames=False)
+            try:
+                r = read_report(p, load_frames=False)
+            except Exception as e:
+                raise ValueError(f"failed to read report {p}") from e
+            collisions = _RESERVED & r.metrics.keys()
+            if collisions:
+                key = next(iter(collisions))
+                raise ValueError(
+                    f"report {r.run_id!r} has a metric named {key!r} that collides with a reserved column"
+                )
             rows.append(
                 {
                     "run_id": r.run_id,
@@ -30,7 +51,10 @@ class DirectorySource:
                     **r.metrics,
                 }
             )
-        return pl.DataFrame(rows) if rows else pl.DataFrame()
+        return pl.DataFrame(rows) if rows else _EMPTY
 
     def report(self, run_id: str) -> PerfReport:
-        return read_report(self._dir / f"{run_id}.json")
+        path = self._dir / f"{run_id}.json"
+        if not path.exists():
+            raise FileNotFoundError(f"no report with run_id {run_id!r} in {self._dir}")
+        return read_report(path)

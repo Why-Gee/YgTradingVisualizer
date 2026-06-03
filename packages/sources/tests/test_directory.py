@@ -1,13 +1,14 @@
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 
 import polars as pl
+import pytest
 from ygperf.io import write_report
 from ygperf.report import SCHEMA_VERSION, PerfReport
 from ygtv.sources.base import Source
 from ygtv.sources.directory import DirectorySource
 
 
-def _write(tmp_path, run_id, sha, sharpe):
+def _write(tmp_path, run_id, sha, sharpe, metrics=None):
     r = PerfReport(
         schema_version=SCHEMA_VERSION,
         run_id=run_id,
@@ -19,7 +20,7 @@ def _write(tmp_path, run_id, sha, sharpe):
         cost_bps=5.0,
         freq="1M",
         params={},
-        metrics={"sharpe": sharpe, "maxdd": 0.2},
+        metrics=metrics if metrics is not None else {"sharpe": sharpe, "maxdd": 0.2},
         series=pl.DataFrame(
             {"timestamp": [datetime(2026, 1, 1)], "equity": [1.0], "returns": [0.0]}
         ),
@@ -49,4 +50,12 @@ def test_directory_source_indexes_runs_and_loads_reports(tmp_path):
 
 
 def test_runs_frame_is_empty_for_empty_dir(tmp_path):
-    assert DirectorySource(tmp_path).runs().is_empty()
+    frame = DirectorySource(tmp_path).runs()
+    assert frame.is_empty()
+    assert "run_id" in frame.columns
+
+
+def test_runs_raises_on_reserved_metric_name(tmp_path):
+    _write(tmp_path, "bad", "sha", 0.0, metrics={"git_sha": 0.99})
+    with pytest.raises(ValueError, match="git_sha"):
+        DirectorySource(tmp_path).runs()

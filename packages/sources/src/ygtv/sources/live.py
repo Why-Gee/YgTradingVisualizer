@@ -15,5 +15,5 @@ class LiveSource(DirectorySource):
         runs = self.runs()
         if runs.is_empty():
             raise LookupError("no runs in live directory")
-        newest = runs.sort("run_ts", descending=True).head(1)["run_id"].item()
-        return self.report(newest)
+        run_id = runs.sort("run_ts", descending=True)["run_id"][0]
+        return self.report(run_id)
