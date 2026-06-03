@@ -3,10 +3,10 @@ from datetime import UTC, datetime, timezone
 import plotly.graph_objects as go
 import polars as pl
 from ygperf.report import SCHEMA_VERSION, PerfReport
-from ygtv.components.equity import equity_curve
+from ygtv.components.rolling import rolling_sharpe
 
 
-def _report(series):
+def _r(s):
     return PerfReport(
         schema_version=SCHEMA_VERSION,
         run_id="r",
@@ -19,29 +19,22 @@ def _report(series):
         freq="1M",
         params={},
         metrics={},
-        series=series,
+        series=s,
         trades=None,
         positions=None,
         extras={},
     )
 
 
-def test_equity_curve_returns_figure_with_one_trace():
+def test_rolling_sharpe_returns_figure():
+    ts = [datetime(2026, m, 1) for m in range(1, 13)]
     s = pl.DataFrame(
         {
-            "timestamp": [datetime(2026, 1, 1), datetime(2026, 2, 1)],
-            "equity": [1.0, 1.2],
-            "returns": [0.0, 0.2],
+            "timestamp": ts,
+            "equity": [1.0] * 12,
+            "returns": [0.01, -0.02, 0.03, 0.0, 0.02, -0.01, 0.04, 0.01, -0.03, 0.02, 0.0, 0.01],
         }
     )
-    fig = equity_curve(_report(s))
+    fig = rolling_sharpe(_r(s), window=3, periods_per_year=12)
     assert isinstance(fig, go.Figure)
     assert len(fig.data) == 1
-    assert list(fig.data[0].y) == [1.0, 1.2]
-
-
-def test_equity_curve_handles_missing_series_defensively():
-    fig = equity_curve(_report(None))
-    assert isinstance(fig, go.Figure)
-    assert len(fig.data) == 0
-    assert fig.layout.annotations  # shows a "no series" annotation

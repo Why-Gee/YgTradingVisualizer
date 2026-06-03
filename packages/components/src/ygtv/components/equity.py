@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import plotly.graph_objects as go
-
 from ygperf.report import PerfReport
 
 
