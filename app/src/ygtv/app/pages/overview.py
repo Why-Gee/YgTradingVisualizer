@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import dash
+import dash_ag_grid as dag
 import polars as pl
-from dash import dash_table, html
+from dash import html
 
 
 def register(source) -> None:
@@ -21,16 +22,18 @@ def register(source) -> None:
         )
 
     records = runs.to_dicts() if not runs.is_empty() else []
-    columns = [{"name": c, "id": c} for c in (runs.columns if not runs.is_empty() else ["run_id"])]
+    columns = runs.columns if not runs.is_empty() else ["run_id"]
 
     layout = html.Div(
         [
             html.H4("Overview"),
-            dash_table.DataTable(
-                data=records,
-                columns=columns,
-                page_size=20,
-                sort_action="native",
+            dag.AgGrid(
+                id="overview-grid",
+                rowData=records,
+                columnDefs=[{"field": c} for c in columns],
+                defaultColDef={"sortable": True, "filter": True, "resizable": True},
+                dashGridOptions={"pagination": True, "paginationPageSize": 20},
+                style={"height": 480},
             ),
         ]
     )

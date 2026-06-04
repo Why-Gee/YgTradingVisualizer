@@ -33,7 +33,7 @@ uv workspace. Source-agnostic. Knows nothing about cerebrum.
 `ygperf` is **neutrally named on purpose** — it is not visualization-specific and not
 cerebrum-specific; it is the contract every producer and consumer agrees on.
 
-### Repo B — `Why-Gee/YgCerebrumVisualizer` (the cerebrum bridge; `…\CerebrumVisualizer`)
+### Repo B — `Why-Gee/YgTradingCerebrumVisualizer` (the cerebrum bridge; `…\CerebrumVisualizer`)
 
 The **only** place cerebrum-awareness lives. Depends on Repo A. Delivered via its **own handoff**.
 
@@ -169,5 +169,5 @@ the Repo B + Repo C handoffs.** Repos B and C are external → not edited here.
 
 - Repo A `Why-Gee/YgTradingVisualizer`; packages `ygperf`, `ygtv-components`, `ygtv-sources`; import
   namespace `ygtv` for the viz packages, `ygperf` for the contract.
-- Repo B `Why-Gee/YgCerebrumVisualizer` @ `L:\Work\Programming\Trading\CerebrumVisualizer`.
+- Repo B `Why-Gee/YgTradingCerebrumVisualizer` @ `L:\Work\Programming\Trading\CerebrumVisualizer`.
 - Repo C cerebrum `Why-Gee/YgTradingCerebrum` (producer; emission only).

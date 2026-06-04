@@ -49,7 +49,7 @@ def test_build_app_returns_dash_with_pages_and_flask_server():
     assert app.layout is not None
     assert app.server is not None  # Flask server exposed for deploy
     paths = {p["path"] for p in dash.page_registry.values()}
-    assert {"/", "/tearsheet"} <= paths
+    assert {"/", "/tearsheet", "/regression"} <= paths
 
 
 def test_build_app_idempotent_no_page_leak():
@@ -57,14 +57,79 @@ def test_build_app_idempotent_no_page_leak():
     build_app(_FakeSource())
     build_app(_FakeSource())
     paths = {p["path"] for p in dash.page_registry.values()}
-    assert paths == {"/", "/tearsheet"}
-    assert len(dash.page_registry) == 2
+    assert paths == {"/", "/tearsheet", "/regression"}
+    assert len(dash.page_registry) == 3
+
+
+def test_build_app_extra_pages_registered_and_in_nav():
+    """Source bridges can inject pages via extra_pages; they register and get a nav link."""
+
+    def _extra(source):
+        from dash import html
+
+        dash.register_page("extra", path="/extra", name="Extra", layout=html.Div("extra"))
+
+    app = build_app(_FakeSource(), extra_pages=[_extra])
+    paths = {p["path"] for p in dash.page_registry.values()}
+    assert "/extra" in paths
+    # the nav (second child of the container) lists a link to the injected page
+    nav = app.layout.children[1]
+    hrefs = [link.href for link in nav.children]
+    assert "/extra" in hrefs
 
 
 def test_render_figures_returns_four_graphs():
-    """_render_figures returns exactly 4 dcc.Graph components with go.Figure figures."""
+    """_render_figures returns exactly 4 dcc.Graph components when no trades/positions."""
     figures = _render_figures(_FakeSource(), "r1")
     assert len(figures) == 4
+    for graph in figures:
+        assert isinstance(graph, dash.dcc.Graph)
+        assert isinstance(graph.figure, go.Figure)
+
+
+class _FakeSourceWithData(_FakeSource):
+    """Source that returns a report with both trades and positions frames."""
+
+    def report(self, run_id):
+        base = super().report(run_id)
+        trades = pl.DataFrame(
+            {
+                "timestamp": [datetime(2026, 1, 1), datetime(2026, 1, 2)],
+                "symbol": ["AAPL", "MSFT"],
+                "qty": [100.0, -50.0],
+                "price": [150.0, 300.0],
+            }
+        )
+        positions = pl.DataFrame(
+            {
+                "timestamp": [datetime(2026, 1, 1), datetime(2026, 1, 1)],
+                "symbol": ["AAPL", "MSFT"],
+                "weight": [0.6, 0.4],
+            }
+        )
+        return PerfReport(
+            schema_version=base.schema_version,
+            run_id=base.run_id,
+            run_ts=base.run_ts,
+            git_sha=base.git_sha,
+            git_dirty=base.git_dirty,
+            eval_name=base.eval_name,
+            universe=base.universe,
+            cost_bps=base.cost_bps,
+            freq=base.freq,
+            params=base.params,
+            metrics=base.metrics,
+            series=base.series,
+            trades=trades,
+            positions=positions,
+            extras=base.extras,
+        )
+
+
+def test_render_figures_returns_six_graphs_with_trades_and_positions():
+    """_render_figures returns 6 dcc.Graph components when trades+positions present."""
+    figures = _render_figures(_FakeSourceWithData(), "r1")
+    assert len(figures) == 6
     for graph in figures:
         assert isinstance(graph, dash.dcc.Graph)
         assert isinstance(graph.figure, go.Figure)

@@ -1374,6 +1374,6 @@ git push
 ---
 
 ## Out of scope (this plan) → tracked separately
-- **Repo B handoff** — `YgCerebrumVisualizer` bridge (`CerebrumBacktestSource`, cerebrum pages).
+- **Repo B handoff** — `YgTradingCerebrumVisualizer` bridge (`CerebrumBacktestSource`, cerebrum pages).
 - **Repo C handoff** — cerebrum `ygperf` emission (canonical 3 evals + run-store).
 - **Phase 2 (Repo A)** — regression-over-time, factor-attribution, cost×time components/pages.

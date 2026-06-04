@@ -1,16 +1,32 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable
+
 import dash
 import dash_bootstrap_components as dbc
 from dash import Dash, dcc, html
-from ygtv.app.pages import overview, tearsheet
+from ygtv.app.pages import overview, regression, tearsheet
 
 
-def build_app(source) -> Dash:
+def build_app(
+    source,
+    *,
+    extra_pages: Iterable[Callable[[object], None]] = (),
+) -> Dash:
     """Build a generic multipage Dash app over any ygperf Source.
 
     `app.server` is the Flask WSGI server (for gunicorn/deploy).
     Auth and hosting configuration are deferred to the deployment layer.
+
+    Parameters
+    ----------
+    source:
+        A ygperf Source (provides ``runs()`` / ``report()``).
+    extra_pages:
+        Page registrants a source bridge can inject. Each is called as
+        ``register(source)`` after the built-in pages, so bridge-specific pages
+        (e.g. cerebrum's THE-NUMBER / factor attribution) appear with nav links
+        without re-implementing this factory.
     """
     dash.page_registry.clear()  # idempotent: don't leak pages across app instances/tests
     app = Dash(
@@ -22,6 +38,9 @@ def build_app(source) -> Dash:
 
     overview.register(source)
     tearsheet.register(source)
+    regression.register(source)
+    for register_page in extra_pages:
+        register_page(source)
 
     app.layout = dbc.Container(
         [
