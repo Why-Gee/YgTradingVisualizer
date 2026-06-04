@@ -45,10 +45,6 @@ def trades_timeline(report: PerfReport) -> go.Figure:
             parts.append(f"qty: {qtys[i]}")  # type: ignore[index]
         hover.append("<br>".join(parts))
 
-    marker_kwargs: dict = {"mode": "markers"}
-    if colors is not None:
-        marker_kwargs["marker"] = go.scatter.Marker(color=colors, size=sizes)
-
     fig = go.Figure(
         go.Scatter(
             x=xs,
