@@ -3,7 +3,7 @@ from __future__ import annotations
 import dash
 import dash_bootstrap_components as dbc
 from dash import Dash, dcc, html
-from ygtv.app.pages import overview, tearsheet
+from ygtv.app.pages import overview, regression, tearsheet
 
 
 def build_app(source) -> Dash:
@@ -22,6 +22,7 @@ def build_app(source) -> Dash:
 
     overview.register(source)
     tearsheet.register(source)
+    regression.register(source)
 
     app.layout = dbc.Container(
         [

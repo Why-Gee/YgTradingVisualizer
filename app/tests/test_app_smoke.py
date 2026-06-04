@@ -49,7 +49,7 @@ def test_build_app_returns_dash_with_pages_and_flask_server():
     assert app.layout is not None
     assert app.server is not None  # Flask server exposed for deploy
     paths = {p["path"] for p in dash.page_registry.values()}
-    assert {"/", "/tearsheet"} <= paths
+    assert {"/", "/tearsheet", "/regression"} <= paths
 
 
 def test_build_app_idempotent_no_page_leak():
@@ -57,8 +57,8 @@ def test_build_app_idempotent_no_page_leak():
     build_app(_FakeSource())
     build_app(_FakeSource())
     paths = {p["path"] for p in dash.page_registry.values()}
-    assert paths == {"/", "/tearsheet"}
-    assert len(dash.page_registry) == 2
+    assert paths == {"/", "/tearsheet", "/regression"}
+    assert len(dash.page_registry) == 3
 
 
 def test_render_figures_returns_four_graphs():
