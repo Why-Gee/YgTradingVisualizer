@@ -5,7 +5,7 @@ import polars as pl
 from ygtv.components._base import _empty
 
 
-def regression_over_time(
+def metric_regression(
     runs: pl.DataFrame | None,
     metric: str,
     *,
@@ -54,9 +54,14 @@ def regression_over_time(
 
     df = df.with_columns(hovertext_expr.alias("_hover"))
 
+    # x = run order (sorted by run_ts), tick-labelled by short git SHA. An index-based x keeps
+    # every run distinct even when two runs share a SHA (a categorical SHA axis would merge them).
+    shas7 = [s[:7] for s in df["git_sha"].to_list()]
+    x = list(range(len(shas7)))
+
     fig = go.Figure(
         go.Scatter(
-            x=df["run_ts"].to_list(),
+            x=x,
             y=df[metric].to_list(),
             mode="lines+markers",
             text=df["_hover"].to_list(),
@@ -64,9 +69,10 @@ def regression_over_time(
             name=metric,
         )
     )
+    fig.update_xaxes(tickmode="array", tickvals=x, ticktext=shas7)
     fig.update_layout(
         title=f"{metric} over runs",
-        xaxis_title="run time",
+        xaxis_title="git sha (run order)",
         yaxis_title=metric,
     )
     return fig

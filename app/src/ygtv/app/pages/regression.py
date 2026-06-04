@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import dash
 from dash import Input, Output, callback, dcc, html
-from ygtv.components import regression_over_time
+from ygtv.components import metric_regression
 
 # Module-level flag to prevent duplicate callback registration across build_app calls
 _callback_registered = False
 
-# Columns that are never plotted as metrics
-_RESERVED = {"run_id", "git_sha", "run_ts", "eval_name", "cost_bps"}
+# Columns that are never plotted as metrics (run metadata, not metrics)
+_RESERVED = {"run_id", "git_sha", "run_ts", "eval_name", "universe", "cost_bps", "git_dirty"}
 
 # Sentinel for the "All evals" choice — null-byte prefix can't collide with a real eval_name
 _ALL_EVALS = "\x00ALL"
@@ -51,7 +51,7 @@ def register(source) -> None:
 
     default_metric = metrics[0]
 
-    initial_figure = regression_over_time(runs, default_metric)
+    initial_figure = metric_regression(runs, default_metric)
 
     def _layout():
         return html.Div(
@@ -81,6 +81,4 @@ def register(source) -> None:
             if not metric:
                 return []
             eval_name = None if eval_val in (None, _ALL_EVALS) else eval_val
-            return dcc.Graph(
-                figure=regression_over_time(source.runs(), metric, eval_name=eval_name)
-            )
+            return dcc.Graph(figure=metric_regression(source.runs(), metric, eval_name=eval_name))

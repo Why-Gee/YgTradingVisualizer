@@ -4,7 +4,7 @@ from ygtv.components.drawdown import drawdown_curve
 from ygtv.components.equity import equity_curve
 from ygtv.components.heatmap import monthly_returns_heatmap
 from ygtv.components.positions import positions_over_time
-from ygtv.components.regression import regression_over_time
+from ygtv.components.regression import metric_regression
 from ygtv.components.rolling import rolling_sharpe
 from ygtv.components.trades import trades_timeline
 
@@ -13,9 +13,9 @@ __all__ = [
     "drawdown_curve",
     "equity_curve",
     "factor_attribution_bars",
+    "metric_regression",
     "monthly_returns_heatmap",
     "positions_over_time",
-    "regression_over_time",
     "rolling_sharpe",
     "trades_timeline",
 ]
