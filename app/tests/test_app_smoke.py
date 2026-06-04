@@ -61,6 +61,23 @@ def test_build_app_idempotent_no_page_leak():
     assert len(dash.page_registry) == 3
 
 
+def test_build_app_extra_pages_registered_and_in_nav():
+    """Source bridges can inject pages via extra_pages; they register and get a nav link."""
+
+    def _extra(source):
+        from dash import html
+
+        dash.register_page("extra", path="/extra", name="Extra", layout=html.Div("extra"))
+
+    app = build_app(_FakeSource(), extra_pages=[_extra])
+    paths = {p["path"] for p in dash.page_registry.values()}
+    assert "/extra" in paths
+    # the nav (second child of the container) lists a link to the injected page
+    nav = app.layout.children[1]
+    hrefs = [link.href for link in nav.children]
+    assert "/extra" in hrefs
+
+
 def test_render_figures_returns_four_graphs():
     """_render_figures returns exactly 4 dcc.Graph components when no trades/positions."""
     figures = _render_figures(_FakeSource(), "r1")
