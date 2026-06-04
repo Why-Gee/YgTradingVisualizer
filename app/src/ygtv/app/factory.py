@@ -5,13 +5,14 @@ from collections.abc import Callable, Iterable
 import dash
 import dash_bootstrap_components as dbc
 from dash import Dash, dcc, html
-from ygtv.app.pages import overview, regression, tearsheet
+from ygtv.app.pages import live, overview, regression, tearsheet
 
 
 def build_app(
     source,
     *,
     extra_pages: Iterable[Callable[[object], None]] = (),
+    live_refresh_ms: int = live.DEFAULT_REFRESH_MS,
 ) -> Dash:
     """Build a generic multipage Dash app over any ygperf Source.
 
@@ -27,6 +28,8 @@ def build_app(
         ``register(source)`` after the built-in pages, so bridge-specific pages
         (e.g. cerebrum's THE-NUMBER / factor attribution) appear with nav links
         without re-implementing this factory.
+    live_refresh_ms:
+        Poll period (ms) for the auto-refreshing Live page's ``dcc.Interval``.
     """
     dash.page_registry.clear()  # idempotent: don't leak pages across app instances/tests
     app = Dash(
@@ -39,6 +42,7 @@ def build_app(
     overview.register(source)
     tearsheet.register(source)
     regression.register(source)
+    live.register(source, refresh_ms=live_refresh_ms)
     for register_page in extra_pages:
         register_page(source)
 
