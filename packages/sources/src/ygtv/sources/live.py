@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from ygperf.report import PerfReport
 from ygtv.sources.directory import DirectorySource
+from ygtv.sources.runs import latest_run_id
 
 
 class LiveSource(DirectorySource):
@@ -12,8 +13,7 @@ class LiveSource(DirectorySource):
     """
 
     def latest(self) -> PerfReport:
-        runs = self.runs()
-        if runs.is_empty():
+        run_id = latest_run_id(self.runs())
+        if run_id is None:
             raise LookupError("no runs in live directory")
-        run_id = runs.sort("run_ts", descending=True)["run_id"][0]
         return self.report(run_id)

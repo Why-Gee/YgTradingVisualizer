@@ -76,11 +76,17 @@ formatting before committing.
 - `Source` is a `runtime_checkable` Protocol — `runs() -> pl.DataFrame`,
   `report(run_id) -> PerfReport`. New sources implement only these two methods.
 - `app.server` (Flask) is always exposed by `build_app(source)` for gunicorn/deploy.
-- `build_app(source, *, extra_pages=())` registers the built-in pages (Overview, Tear sheet,
-  Regression), then each `extra_pages` registrant, so a source bridge injects its own pages with
-  nav links without re-implementing the factory. Each registrant is a `register(source)` callable.
+- `build_app(source, *, extra_pages=(), live_refresh_ms=...)` registers the built-in pages (Overview,
+  Tear sheet, Regression, Live), then each `extra_pages` registrant, so a source bridge injects its
+  own pages with nav links without re-implementing the factory. Each registrant is a `register(source)`
+  callable.
 - `metric_regression(runs, metric)` is the cross-run factory (`runs()` DataFrame → `go.Figure`)
   behind the generic `/regression` drift page; it reads only run metadata + flat metrics.
+- The `/live` page auto-refreshes on a `dcc.Interval` (period `live_refresh_ms`, default 5000) and
+  renders the newest run. It is source-agnostic — it derives the latest run via
+  `latest_run_id(source.runs())` rather than any `Source.latest()`, so it serves a backtest
+  `DirectorySource` and the future live-bot `LiveSource` identically. `latest_run_id(runs)` (in
+  `ygtv.sources`) is the shared "newest run by `run_ts`" helper; `LiveSource.latest()` reuses it.
 
 ## Windows / polars tz pitfall
 
@@ -99,6 +105,7 @@ display strings before calling `to_dicts()` — do not remove that guard.
 | `YGTV_HOST` | `127.0.0.1` | Dash/Flask bind host |
 | `YGTV_PORT` | `8050` | Dash/Flask bind port |
 | `YGTV_DEBUG` | `` (off) | Set to `1`, `true`, or `yes` to enable Dash debug mode |
+| `YGTV_LIVE_REFRESH_MS` | `5000` | Live page `dcc.Interval` poll period (ms); must be a positive int |
 
 Example:
 ```bash
