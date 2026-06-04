@@ -11,7 +11,7 @@ No cerebrum or strategy-specific logic lives here.
 | Repo | Role |
 |---|---|
 | **YgTradingVisualizer** (this repo, Repo A) | Generic contract, components, sources, Dash app |
-| **YgCerebrumVisualizer** (Repo B) | Cerebrum bridge — `CerebrumBacktestSource`, cerebrum pages |
+| **YgTradingCerebrumVisualizer** (Repo B) | Cerebrum bridge — `CerebrumBacktestSource`, cerebrum pages |
 | **Cerebrum producer** (Repo C) | Emits `ygperf` reports from cerebrum backtests / live bot |
 
 Rule: if code mentions cerebrum, a strategy name, or a specific data provider, it belongs in Repo B
@@ -76,6 +76,11 @@ formatting before committing.
 - `Source` is a `runtime_checkable` Protocol — `runs() -> pl.DataFrame`,
   `report(run_id) -> PerfReport`. New sources implement only these two methods.
 - `app.server` (Flask) is always exposed by `build_app(source)` for gunicorn/deploy.
+- `build_app(source, *, extra_pages=())` registers the built-in pages (Overview, Tear sheet,
+  Regression), then each `extra_pages` registrant, so a source bridge injects its own pages with
+  nav links without re-implementing the factory. Each registrant is a `register(source)` callable.
+- `metric_regression(runs, metric)` is the cross-run factory (`runs()` DataFrame → `go.Figure`)
+  behind the generic `/regression` drift page; it reads only run metadata + flat metrics.
 
 ## Windows / polars tz pitfall
 
