@@ -10,6 +10,9 @@ _callback_registered = False
 # Columns that are never plotted as metrics
 _RESERVED = {"run_id", "git_sha", "run_ts", "eval_name", "cost_bps"}
 
+# Sentinel for the "All evals" choice — null-byte prefix can't collide with a real eval_name
+_ALL_EVALS = "\x00ALL"
+
 
 def _metric_columns(runs) -> list[str]:
     """Return numeric columns that are not in the reserved set."""
@@ -34,15 +37,17 @@ def register(source) -> None:
     metrics = _metric_columns(runs)
 
     if not metrics:
-        layout = html.Div("No runs available.")
+        layout = html.Div("No numeric metrics available.")
         dash.register_page("regression", path="/regression", name="Regression", layout=layout)
         return
 
-    # Eval options: sorted unique values + "All" sentinel
+    # Eval options: an "All" sentinel that cannot collide with a real eval_name, then sorted uniques
+    eval_options = [{"label": "All", "value": _ALL_EVALS}]
     if "eval_name" in runs.columns:
-        evals = ["All", *sorted(runs["eval_name"].drop_nulls().unique().to_list())]
-    else:
-        evals = ["All"]
+        eval_options += [
+            {"label": e, "value": e}
+            for e in sorted(runs["eval_name"].drop_nulls().unique().to_list())
+        ]
 
     default_metric = metrics[0]
 
@@ -53,7 +58,7 @@ def register(source) -> None:
             [
                 html.H4("Regression over time"),
                 dcc.Dropdown(metrics, default_metric, id="reg-metric"),
-                dcc.Dropdown(evals, "All", id="reg-eval"),
+                dcc.Dropdown(eval_options, _ALL_EVALS, id="reg-eval"),
                 html.Div(
                     dcc.Graph(figure=initial_figure),
                     id="reg-figure",
@@ -75,7 +80,7 @@ def register(source) -> None:
         def _on_select(metric: str | None, eval_val: str | None):
             if not metric:
                 return []
-            eval_name = None if eval_val in (None, "All") else eval_val
+            eval_name = None if eval_val in (None, _ALL_EVALS) else eval_val
             return dcc.Graph(
                 figure=regression_over_time(source.runs(), metric, eval_name=eval_name)
             )
