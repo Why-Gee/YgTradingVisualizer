@@ -14,7 +14,7 @@ def cost_time_grid(
     title: str = "Cost x time",
 ) -> go.Figure:
     """Heatmap of a cost x time grid."""
-    if not x_labels or not y_labels or not z:
+    if not x_labels or not y_labels or not z or all(len(row) == 0 for row in z):
         return _empty("no grid")
 
     fig = go.Figure(

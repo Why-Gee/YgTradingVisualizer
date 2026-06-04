@@ -25,7 +25,7 @@ def trades_timeline(report: PerfReport) -> go.Figure:
 
     if has_qty:
         qtys = t["qty"].to_list()
-        colors = ["green" if q > 0 else "red" for q in qtys]
+        colors = ["green" if q > 0 else "red" if q < 0 else "gray" for q in qtys]
         abs_qtys = [abs(q) for q in qtys]
         max_q = max(abs_qtys) if abs_qtys else 1.0
         if max_q == 0:

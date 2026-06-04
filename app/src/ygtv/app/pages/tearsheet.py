@@ -32,7 +32,7 @@ def _render_figures(source, run_id: str) -> list:
 
 
 def register(source) -> None:
-    """Register the Tear Sheet page at '/tearsheet' with a run dropdown and four figures."""
+    """Register the Tear Sheet page at '/tearsheet' with a run dropdown and 4-6 figures."""
     global _callback_registered
 
     runs = source.runs()
