@@ -2,21 +2,33 @@ from __future__ import annotations
 
 import dash
 from dash import Input, Output, callback, dcc, html
-from ygtv.components import drawdown_curve, equity_curve, monthly_returns_heatmap, rolling_sharpe
+from ygtv.components import (
+    drawdown_curve,
+    equity_curve,
+    monthly_returns_heatmap,
+    positions_over_time,
+    rolling_sharpe,
+    trades_timeline,
+)
 
 # Module-level flag to prevent duplicate callback registration across build_app calls
 _callback_registered = False
 
 
 def _render_figures(source, run_id: str) -> list:
-    """Return the four dcc.Graph components for the given run_id."""
+    """Return dcc.Graph components for the given run_id (4-6 depending on data)."""
     rep = source.report(run_id)
-    return [
+    graphs = [
         dcc.Graph(figure=equity_curve(rep)),
         dcc.Graph(figure=drawdown_curve(rep)),
         dcc.Graph(figure=rolling_sharpe(rep)),
         dcc.Graph(figure=monthly_returns_heatmap(rep)),
     ]
+    if rep.trades is not None:
+        graphs.append(dcc.Graph(figure=trades_timeline(rep)))
+    if rep.positions is not None:
+        graphs.append(dcc.Graph(figure=positions_over_time(rep)))
+    return graphs
 
 
 def register(source) -> None:
