@@ -77,3 +77,26 @@ def test_equity_curve_overlays_ew_benchmark_only_two_traces():
     fig = equity_curve(_report(s))
     assert len(fig.data) == 2
     assert [t.name for t in fig.data] == ["model", "SP500 (EW)"]
+
+
+def test_equity_curve_overlays_baseline_then_benchmarks_four_traces():
+    s = pl.DataFrame(
+        {
+            "timestamp": [datetime(2026, 1, 1), datetime(2026, 2, 1)],
+            "equity": [1.0, 1.2],
+            "returns": [0.0, 0.2],
+            "baseline_equity": [1.0, 1.15],
+            "benchmark_equity": [1.0, 1.1],
+            "benchmark_cw_equity": [1.0, 1.05],
+        }
+    )
+    fig = equity_curve(_report(s))
+    assert len(fig.data) == 4
+    # Baseline (a model variant) sits right after model, before the SP500 lines.
+    assert [t.name for t in fig.data] == [
+        "model",
+        "baseline (before)",
+        "SP500 (cap-wt)",
+        "SP500 (EW)",
+    ]
+    assert list(fig.data[1].y) == [1.0, 1.15]
