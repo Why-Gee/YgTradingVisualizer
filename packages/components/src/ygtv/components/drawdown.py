@@ -27,9 +27,13 @@ def drawdown_curve(report: PerfReport) -> go.Figure:
         return _empty("no series")
     t = s["timestamp"].to_list()
     fig = go.Figure()
-    fig.add_scatter(x=t, y=_drawdown(s["equity"].to_list()), fill="tozeroy", name="model")
+    fig.add_scatter(
+        x=t, y=_drawdown(s["equity"].to_list()), mode="lines", fill="tozeroy", name="model"
+    )
     for col, name, dash in BENCHMARK_TRACES:
         if col in s.columns:
-            fig.add_scatter(x=t, y=_drawdown(s[col].to_list()), name=name, line={"dash": dash})
+            fig.add_scatter(
+                x=t, y=_drawdown(s[col].to_list()), mode="lines", name=name, line={"dash": dash}
+            )
     fig.update_layout(title=f"Drawdown — {report.eval_name}", yaxis_title="drawdown")
     return fig
