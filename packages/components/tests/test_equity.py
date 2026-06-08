@@ -45,3 +45,35 @@ def test_equity_curve_handles_missing_series_defensively():
     assert isinstance(fig, go.Figure)
     assert len(fig.data) == 0
     assert fig.layout.annotations  # shows a "no series" annotation
+
+
+def test_equity_curve_overlays_both_benchmarks_three_traces():
+    s = pl.DataFrame(
+        {
+            "timestamp": [datetime(2026, 1, 1), datetime(2026, 2, 1)],
+            "equity": [1.0, 1.2],
+            "returns": [0.0, 0.2],
+            "benchmark_equity": [1.0, 1.1],
+            "benchmark_cw_equity": [1.0, 1.05],
+        }
+    )
+    fig = equity_curve(_report(s))
+    assert len(fig.data) == 3
+    # Plot order: model, then cap-weighted, then EW (precise legend labels).
+    assert [t.name for t in fig.data] == ["model", "SP500 (cap-wt)", "SP500 (EW)"]
+    assert list(fig.data[1].y) == [1.0, 1.05]
+    assert list(fig.data[2].y) == [1.0, 1.1]
+
+
+def test_equity_curve_overlays_ew_benchmark_only_two_traces():
+    s = pl.DataFrame(
+        {
+            "timestamp": [datetime(2026, 1, 1), datetime(2026, 2, 1)],
+            "equity": [1.0, 1.2],
+            "returns": [0.0, 0.2],
+            "benchmark_equity": [1.0, 1.1],
+        }
+    )
+    fig = equity_curve(_report(s))
+    assert len(fig.data) == 2
+    assert [t.name for t in fig.data] == ["model", "SP500 (EW)"]

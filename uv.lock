@@ -1660,7 +1660,7 @@ dev = [
 
 [[package]]
 name = "ygtv-app"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "app" }
 dependencies = [
     { name = "dash" },
@@ -1692,7 +1692,7 @@ provides-extras = ["quantstats"]
 
 [[package]]
 name = "ygtv-components"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "packages/components" }
 dependencies = [
     { name = "plotly" },
@@ -1709,7 +1709,7 @@ requires-dist = [
 
 [[package]]
 name = "ygtv-sources"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "packages/sources" }
 dependencies = [
     { name = "polars" },
