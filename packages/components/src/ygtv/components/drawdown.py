@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import plotly.graph_objects as go
 from ygperf.report import PerfReport
-from ygtv.components._base import BENCHMARK_TRACES, _empty
+from ygtv.components._base import OVERLAY_TRACES, _empty
 
 
 def _drawdown(equity: list[float]) -> list[float]:
@@ -18,9 +18,9 @@ def _drawdown(equity: list[float]) -> list[float]:
 def drawdown_curve(report: PerfReport) -> go.Figure:
     """Drawdown curve from report.series (cols: timestamp, equity). All values <= 0.
 
-    Plots the model drawdown (filled), plus an optional line for each benchmark ``*_equity``
-    column present (see ``BENCHMARK_TRACES``). Fill stays on the model only — overlaid fills
-    are noisy.
+    Plots the model drawdown (filled), plus an optional line for each overlay ``*_equity``
+    column present (see ``OVERLAY_TRACES``: baseline + SP500 benchmarks). Fill stays on the
+    model only — overlaid fills are noisy.
     """
     s = report.series
     if s is None or s.is_empty():
@@ -30,7 +30,7 @@ def drawdown_curve(report: PerfReport) -> go.Figure:
     fig.add_scatter(
         x=t, y=_drawdown(s["equity"].to_list()), mode="lines", fill="tozeroy", name="model"
     )
-    for col, name, dash in BENCHMARK_TRACES:
+    for col, name, dash in OVERLAY_TRACES:
         if col in s.columns:
             fig.add_scatter(
                 x=t, y=_drawdown(s[col].to_list()), mode="lines", name=name, line={"dash": dash}

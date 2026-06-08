@@ -83,3 +83,29 @@ def test_drawdown_overlays_ew_benchmark_only_two_traces():
     fig = drawdown_curve(_r(s))
     assert len(fig.data) == 2
     assert [t.name for t in fig.data] == ["model", "SP500 (EW)"]
+
+
+def test_drawdown_overlays_baseline_then_benchmarks_four_traces():
+    s = pl.DataFrame(
+        {
+            "timestamp": [datetime(2026, 1, 1), datetime(2026, 2, 1), datetime(2026, 3, 1)],
+            "equity": [1.0, 1.2, 0.9],
+            "returns": [0.0, 0.2, -0.25],
+            "baseline_equity": [1.0, 1.15, 0.85],
+            "benchmark_equity": [1.0, 1.1, 1.0],
+            "benchmark_cw_equity": [1.0, 1.05, 0.95],
+        }
+    )
+    fig = drawdown_curve(_r(s))
+    assert len(fig.data) == 4
+    assert [t.name for t in fig.data] == [
+        "model",
+        "baseline (before)",
+        "SP500 (cap-wt)",
+        "SP500 (EW)",
+    ]
+    for trace in fig.data:
+        assert max(trace.y) <= 0.0
+    # Fill stays on the model only.
+    assert fig.data[0].fill == "tozeroy"
+    assert all(t.fill is None for t in fig.data[1:])
